@@ -12,6 +12,7 @@
     "test-crud-mongo": "node benchmarks/test-crud-mongodb.js",
     "test-complex-pg": "node benchmarks/test-complex-postgres.js",
     "test-complex-mongo": "node benchmarks/test-complex-mongodb.js",
+    "test-advanced": "node benchmarks/test-advanced.js",
     "compare": "node benchmarks/compare-all.js",
     "dashboard": "node benchmarks/generate-dashboard.js"
   },

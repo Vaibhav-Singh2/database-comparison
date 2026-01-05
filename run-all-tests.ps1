@@ -57,6 +57,19 @@ Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 npm run compare
 
+# Run Advanced Tests
+Write-Host ""
+Write-Host "========================================" -ForegroundColor Magenta
+Write-Host "  Advanced Performance Tests" -ForegroundColor Magenta
+Write-Host "========================================" -ForegroundColor Magenta
+Write-Host ""
+Write-Host "Running advanced tests:" -ForegroundColor Yellow
+Write-Host "  - Bulk Operations (100-2000 records)" -ForegroundColor White
+Write-Host "  - Aggregation Pipelines" -ForegroundColor White
+Write-Host "  - Concurrent Connections (10-100)" -ForegroundColor White
+Write-Host ""
+npm run test-advanced
+
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
 Write-Host "  All Tests Complete!" -ForegroundColor Green
@@ -64,8 +77,13 @@ Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 
 Write-Host "Results saved to:" -ForegroundColor Cyan
-Write-Host "  - benchmarks/postgres-results.json" -ForegroundColor White
-Write-Host "  - benchmarks/mongodb-results.json" -ForegroundColor White
+Write-Host "  Basic Tests:" -ForegroundColor Yellow
+Write-Host "    - benchmarks/postgres-results.json" -ForegroundColor White
+Write-Host "    - benchmarks/mongodb-results.json" -ForegroundColor White
+Write-Host "  Advanced Tests:" -ForegroundColor Yellow
+Write-Host "    - benchmarks/bulk-operations-results.json" -ForegroundColor White
+Write-Host "    - benchmarks/aggregation-results.json" -ForegroundColor White
+Write-Host "    - benchmarks/concurrent-results.json" -ForegroundColor White
 Write-Host ""
 
 Write-Host "Next steps:" -ForegroundColor Yellow

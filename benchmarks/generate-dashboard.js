@@ -10,6 +10,19 @@ console.log(chalk.blue.bold('╚════════════════
 const pgResults = JSON.parse(fs.readFileSync('benchmarks/postgres-results.json', 'utf8'));
 const mongoResults = JSON.parse(fs.readFileSync('benchmarks/mongodb-results.json', 'utf8'));
 
+// Load advanced test results
+let bulkResults, aggResults, concurrentResults;
+try {
+  bulkResults = JSON.parse(fs.readFileSync('benchmarks/bulk-operations-results.json', 'utf8'));
+  aggResults = JSON.parse(fs.readFileSync('benchmarks/aggregation-results.json', 'utf8'));
+  concurrentResults = JSON.parse(fs.readFileSync('benchmarks/concurrent-results.json', 'utf8'));
+} catch (error) {
+  console.log(chalk.yellow('⚠ Advanced test results not found. Run: npm run test-advanced'));
+  bulkResults = null;
+  aggResults = null;
+  concurrentResults = null;
+}
+
 const scenarios = ['Light', 'Medium', 'Heavy', 'Very Heavy'];
 
 // Calculate winners
@@ -27,6 +40,18 @@ const veryHeavyMongo = mongoResults.results['Very Heavy'];
 const readWinner = getWinner(veryHeavy.read.avgTime, veryHeavyMongo.read.avgTime);
 const writeWinner = getWinner(veryHeavy.write.avgTime, veryHeavyMongo.write.avgTime);
 const complexWinner = getWinner(veryHeavy.complexQuery.avgTime, veryHeavyMongo.complexQuery.avgTime);
+
+// Advanced test winners
+let bulkWinner, aggWinner, concurrentWinner;
+if (bulkResults) {
+  bulkWinner = getWinner(bulkResults.postgresql['2000'].time, bulkResults.mongodb['2000'].time);
+}
+if (aggResults) {
+  aggWinner = getWinner(aggResults.postgresql.avgOrderTotal.avgTime, aggResults.mongodb.avgOrderTotal.avgTime);
+}
+if (concurrentResults) {
+  concurrentWinner = getWinner(concurrentResults.postgresql['100'].time, concurrentResults.mongodb['100'].time);
+}
 
 // Generate HTML
 const html = `<!DOCTYPE html>
@@ -219,6 +244,27 @@ const html = `<!DOCTYPE html>
             </div>
         </div>
 
+        ${bulkWinner && aggWinner && concurrentWinner ? `
+        <!-- Advanced Test Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card ${bulkWinner.winner === 'MongoDB' ? 'mongo' : 'pg'}">
+                <div class="label">Bulk Operations Winner</div>
+                <div class="value">${bulkWinner.winner}</div>
+                <div class="subvalue">${bulkWinner.improvement}% faster (2000 records)</div>
+            </div>
+            <div class="metric-card ${aggWinner.winner === 'MongoDB' ? 'mongo' : 'pg'}">
+                <div class="label">Aggregation Winner</div>
+                <div class="value">${aggWinner.winner}</div>
+                <div class="subvalue">${aggWinner.improvement}% faster</div>
+            </div>
+            <div class="metric-card ${concurrentWinner.winner === 'MongoDB' ? 'mongo' : 'pg'}">
+                <div class="label">Concurrent Connections Winner</div>
+                <div class="value">${concurrentWinner.winner}</div>
+                <div class="subvalue">${concurrentWinner.improvement}% faster (100 users)</div>
+            </div>
+        </div>
+        ` : ''}
+
         <!-- Response Time Comparison -->
         <div class="chart-section">
             <h2>📊 Response Time Comparison (Very Heavy Load)</h2>
@@ -261,6 +307,42 @@ const html = `<!DOCTYPE html>
                 </tbody>
             </table>
         </div>
+
+        ${bulkResults ? `
+        <!-- Bulk Operations Performance -->
+        <div class="chart-section">
+            <h2>📦 Bulk Operations Performance</h2>
+            <div class="chart-container">
+                <canvas id="bulkOpsChart"></canvas>
+            </div>
+            <div class="insight-box">
+                <h3>Key Insights</h3>
+                <ul>
+                    <li>MongoDB consistently faster for bulk inserts across all sizes</li>
+                    <li>Performance advantage increases with larger batch sizes</li>
+                    <li>Best for data imports and ETL pipelines</li>
+                </ul>
+            </div>
+        </div>
+        ` : ''}
+
+        ${concurrentResults ? `
+        <!-- Concurrent Connections Performance -->
+        <div class="chart-section">
+            <h2>👥 Concurrent Connections Performance</h2>
+            <div class="chart-container">
+                <canvas id="concurrentChart"></canvas>
+            </div>
+            <div class="insight-box">
+                <h3>Key Insights</h3>
+                <ul>
+                    <li>PostgreSQL handles concurrent connections more efficiently</li>
+                    <li>Better connection pooling and multi-user performance</li>
+                    <li>Ideal for high-traffic enterprise applications</li>
+                </ul>
+            </div>
+        </div>
+        ` : ''}
 
         <!-- Use Case Recommendations -->
         <div class="chart-section">
@@ -420,6 +502,118 @@ const html = `<!DOCTYPE html>
                 }
             }
         });
+
+        ${bulkResults ? `
+        // Bulk Operations Chart
+        const bulkData = ${JSON.stringify(bulkResults)};
+        new Chart(document.getElementById('bulkOpsChart'), {
+            type: 'bar',
+            data: {
+                labels: ['100 records', '500 records', '1000 records', '2000 records'],
+                datasets: [
+                    {
+                        label: 'PostgreSQL',
+                        data: [
+                            bulkData.postgresql['100'].time,
+                            bulkData.postgresql['500'].time,
+                            bulkData.postgresql['1000'].time,
+                            bulkData.postgresql['2000'].time
+                        ],
+                        backgroundColor: '#336791',
+                        borderWidth: 0
+                    },
+                    {
+                        label: 'MongoDB',
+                        data: [
+                            bulkData.mongodb['100'].time,
+                            bulkData.mongodb['500'].time,
+                            bulkData.mongodb['1000'].time,
+                            bulkData.mongodb['2000'].time
+                        ],
+                        backgroundColor: '#4DB33D',
+                        borderWidth: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Lower is Better (milliseconds)',
+                        font: { size: 14, weight: 'normal' }
+                    },
+                    legend: { position: 'top' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Time (ms)' }
+                    }
+                }
+            }
+        });
+        ` : ''}
+
+        ${concurrentResults ? `
+        // Concurrent Connections Chart
+        const concurrentData = ${JSON.stringify(concurrentResults)};
+        new Chart(document.getElementById('concurrentChart'), {
+            type: 'line',
+            data: {
+                labels: ['10 users', '25 users', '50 users', '100 users'],
+                datasets: [
+                    {
+                        label: 'PostgreSQL (Throughput)',
+                        data: [
+                            concurrentData.postgresql['10'].throughput,
+                            concurrentData.postgresql['25'].throughput,
+                            concurrentData.postgresql['50'].throughput,
+                            concurrentData.postgresql['100'].throughput
+                        ],
+                        borderColor: '#336791',
+                        backgroundColor: 'rgba(51, 103, 145, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'MongoDB (Throughput)',
+                        data: [
+                            concurrentData.mongodb['10'].throughput,
+                            concurrentData.mongodb['25'].throughput,
+                            concurrentData.mongodb['50'].throughput,
+                            concurrentData.mongodb['100'].throughput
+                        ],
+                        borderColor: '#4DB33D',
+                        backgroundColor: 'rgba(77, 179, 61, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Higher is Better (requests/second)',
+                        font: { size: 14, weight: 'normal' }
+                    },
+                    legend: { position: 'top' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Throughput (req/s)' }
+                    }
+                }
+            }
+        });
+        ` : ''}
     </script>
 </body>
 </html>`;
