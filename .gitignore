@@ -1,0 +1,28 @@
+# Node modules
+node_modules/
+npm-debug.log*
+
+# Test results
+benchmarks/*.json
+benchmarks/*.html
+
+# Environment variables
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database data
+postgres-data/
+mongo-data/
+
+# LinkedIn post
+LINKEDIN-POST-*.md
