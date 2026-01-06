@@ -33,6 +33,32 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host ""
 Write-Host "Containers ready!" -ForegroundColor Green
 
+# Seed databases
+Write-Host ""
+Write-Host "========================================" -ForegroundColor Magenta
+Write-Host "  Seeding Databases" -ForegroundColor Magenta
+Write-Host "========================================" -ForegroundColor Magenta
+Write-Host ""
+Write-Host "Seeding PostgreSQL..." -ForegroundColor Yellow
+npm run seed-postgres
+if ($LASTEXITCODE -ne 0) {
+    Write-Host ""
+    Write-Host "Failed to seed PostgreSQL database" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host ""
+Write-Host "Seeding MongoDB..." -ForegroundColor Yellow
+npm run seed-mongodb
+if ($LASTEXITCODE -ne 0) {
+    Write-Host ""
+    Write-Host "Failed to seed MongoDB database" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host ""
+Write-Host "Databases seeded successfully!" -ForegroundColor Green
+
 # Test PostgreSQL
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Blue

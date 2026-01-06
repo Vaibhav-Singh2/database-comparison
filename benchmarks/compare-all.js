@@ -5,9 +5,25 @@ console.log(chalk.blue.bold('\n╔═══════════════�
 console.log(chalk.blue.bold('║         Database Performance Comparison                ║'));
 console.log(chalk.blue.bold('╚════════════════════════════════════════════════════════╝\n'));
 
+// Check if result files exist
+const pgPath = 'benchmarks/postgres-results.json';
+const mongoPath = 'benchmarks/mongodb-results.json';
+
+if (!fs.existsSync(pgPath)) {
+  console.error(chalk.red('✗ PostgreSQL results not found.'));
+  console.log(chalk.yellow('  Run the PostgreSQL tests first: npm run test-crud-pg\n'));
+  process.exit(1);
+}
+
+if (!fs.existsSync(mongoPath)) {
+  console.error(chalk.red('✗ MongoDB results not found.'));
+  console.log(chalk.yellow('  Run the MongoDB tests first: npm run test-crud-mongo\n'));
+  process.exit(1);
+}
+
 // Load results
-const pgResults = JSON.parse(fs.readFileSync('benchmarks/postgres-results.json', 'utf8'));
-const mongoResults = JSON.parse(fs.readFileSync('benchmarks/mongodb-results.json', 'utf8'));
+const pgResults = JSON.parse(fs.readFileSync(pgPath, 'utf8'));
+const mongoResults = JSON.parse(fs.readFileSync(mongoPath, 'utf8'));
 
 const scenarios = ['Light', 'Medium', 'Heavy', 'Very Heavy'];
 const operations = ['read', 'write', 'complexQuery', 'productQuery'];

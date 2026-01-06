@@ -133,17 +133,32 @@ async function runTests() {
   console.log(chalk.blue.bold('║     PostgreSQL Performance Benchmarks                  ║'));
   console.log(chalk.blue.bold('╚════════════════════════════════════════════════════════╝\n'));
   
-  // Wait for server
-  console.log('Waiting for server...');
-  for (let i = 0; i < 30; i++) {
+  // Wait for server and database
+  console.log('Waiting for server and database...');
+  let serverReady = false;
+  
+  for (let i = 0; i < 60; i++) {
     try {
       await axios.get(`${BASE_URL}/health`, { timeout: 2000 });
-      console.log(chalk.green('✓ Server ready\n'));
+      // Also test database connection
+      const testQuery = await axios.get(`${BASE_URL}/api/pg/users/1`, { timeout: 2000 });
+      console.log(chalk.green('✓ Server and database ready\n'));
+      serverReady = true;
       break;
     } catch (error) {
+      if (i % 5 === 0 && i > 0) {
+        process.stdout.write(`\r  Waiting... ${i}s`);
+      }
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
+  
+  if (!serverReady) {
+    console.log(chalk.red('\n✗ Server/database not ready after 60s'));
+    console.log(chalk.yellow('  Make sure databases are seeded: npm run seed-all\n'));
+    process.exit(1);
+  }
+  console.log('');
   
   const allResults = {};
   
@@ -164,10 +179,29 @@ async function runTests() {
       productQuery: productStats
     };
     
-    console.log(chalk.green(`\n  ✓ READ: Avg ${readStats.avgTime}ms | P99 ${readStats.p99}ms`));
-    console.log(chalk.green(`  ✓ WRITE: Avg ${writeStats.avgTime}ms | P99 ${writeStats.p99}ms`));
-    console.log(chalk.green(`  ✓ COMPLEX: Avg ${complexStats.avgTime}ms | P99 ${complexStats.p99}ms`));
-    console.log(chalk.green(`  ✓ PRODUCT: Avg ${productStats.avgTime}ms | P99 ${productStats.p99}ms`));
+    if (readStats) {
+      console.log(chalk.green(`\n  ✓ READ: Avg ${readStats.avgTime}ms | P99 ${readStats.p99}ms`));
+    } else {
+      console.log(chalk.red(`\n  ✗ READ: All operations failed`));
+    }
+    
+    if (writeStats) {
+      console.log(chalk.green(`  ✓ WRITE: Avg ${writeStats.avgTime}ms | P99 ${writeStats.p99}ms`));
+    } else {
+      console.log(chalk.red(`  ✗ WRITE: All operations failed`));
+    }
+    
+    if (complexStats) {
+      console.log(chalk.green(`  ✓ COMPLEX: Avg ${complexStats.avgTime}ms | P99 ${complexStats.p99}ms`));
+    } else {
+      console.log(chalk.red(`  ✗ COMPLEX: All operations failed`));
+    }
+    
+    if (productStats) {
+      console.log(chalk.green(`  ✓ PRODUCT: Avg ${productStats.avgTime}ms | P99 ${productStats.p99}ms`));
+    } else {
+      console.log(chalk.red(`  ✗ PRODUCT: All operations failed`));
+    }
   }
   
   // Save results
