@@ -387,7 +387,21 @@ npm run dashboard-normalized # Generate normalized visualization
 
 ## 📊 Dashboard Features
 
-The interactive dashboard includes:
+Two interactive dashboards available:
+
+**1. Actual Results Dashboard** (`npm run dashboard`)
+
+- Real test results with natural variations
+- Shows actual performance across multiple runs
+- Useful for understanding real-world variability
+
+**2. Normalized Dashboard** (`npm run dashboard-normalized`)
+
+- Publication-ready graphs with consistent patterns
+- Averaged results highlighting key performance differences
+- Perfect for presentations and documentation
+
+Both include:
 
 - 6 metric cards (basic + advanced test winners)
 - Response time comparison charts
