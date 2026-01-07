@@ -73,6 +73,9 @@ npm run seed-all
 
 # Generate interactive dashboard
 npm run dashboard
+
+# Generate normalized dashboard (publication-ready)
+npm run dashboard-normalized
 ```
 
 ### Individual Tests
@@ -337,7 +340,8 @@ npm run test-advanced       # Bulk, aggregation, concurrent
 
 # Analysis
 npm run compare             # Compare all results
-npm run dashboard           # Generate visualization
+npm run dashboard           # Generate visualization (actual results)
+npm run dashboard-normalized # Generate normalized visualization
 
 # Automation
 .\run-all-tests.ps1         # Run complete test suite
