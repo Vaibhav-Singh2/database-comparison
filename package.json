@@ -14,7 +14,8 @@
     "test-complex-mongo": "node benchmarks/test-complex-mongodb.js",
     "test-advanced": "node benchmarks/test-advanced.js",
     "compare": "node benchmarks/compare-all.js",
-    "dashboard": "node benchmarks/generate-dashboard.js"
+    "dashboard": "node benchmarks/generate-dashboard.js",
+    "dashboard-normalized": "node benchmarks/generate-dashboard-normalized.js"
   },
   "keywords": [
     "database",
